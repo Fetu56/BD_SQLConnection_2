@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31729.503
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BD_Connection_2", "BD_Connection_2\BD_Connection_2.csproj", "{81191DF0-B41A-4FAE-8AC5-158C4CBBFC63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BD_FORM_CONNECTION", "BD_FORM_CONNECTION\BD_FORM_CONNECTION.csproj", "{E384AB78-17FB-4D85-9D62-863BCA60C600}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{81191DF0-B41A-4FAE-8AC5-158C4CBBFC63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81191DF0-B41A-4FAE-8AC5-158C4CBBFC63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81191DF0-B41A-4FAE-8AC5-158C4CBBFC63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81191DF0-B41A-4FAE-8AC5-158C4CBBFC63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E384AB78-17FB-4D85-9D62-863BCA60C600}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E384AB78-17FB-4D85-9D62-863BCA60C600}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E384AB78-17FB-4D85-9D62-863BCA60C600}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E384AB78-17FB-4D85-9D62-863BCA60C600}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B96F033D-7679-494E-B7B1-B499D66D2A09}
+	EndGlobalSection
+EndGlobal
