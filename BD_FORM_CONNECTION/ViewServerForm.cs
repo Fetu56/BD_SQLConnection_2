@@ -1,38 +1,28 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace BD_FORM_CONNECTION
 {
     public partial class ViewServerForm : Form
     {
         private SqlConnection cn;
-        string useDB;
+        private string _useDB;
+        private string _useTB;
+        private string _table;
+        ToolStripButton buttonStrip;
         public ViewServerForm()
         {
             InitializeComponent();
-            ToolStripButton button = new ToolStripButton("CONFIRM");
-            button.Click += Button_Click;
-            this.menuStrip1.Items.Add(button);
-            this.FormClosing += OnCloseForm;
-            this.listBoxDataBases.NodeMouseClick += ListBoxDataBases_NodeMouseClick;
-            dataGridView.ScrollBars = ScrollBars.Both;
-            dataGridView.AutoGenerateColumns = true;
-            dataGridView.AllowUserToAddRows = false;
-            dataGridView.ReadOnly = true;
-            this.listBoxDataBases.BeforeSelect += ListBoxDataBases_BeforeSelect;
         }
 
         private void ListBoxDataBases_BeforeSelect(object sender, TreeViewCancelEventArgs e)
         {
-            if(e.Node.Level == 1)
+            if (e.Node.Level == 1)
             {
                 LoadDataGreed(e.Node);
             }
@@ -40,30 +30,31 @@ namespace BD_FORM_CONNECTION
 
         private void ListBoxDataBases_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            if(e.Node.Nodes.Count == 0)
+            if (e.Node.Nodes.Count == 0)
             {
                 if (e.Node.Level == 0)
                 {
-                    useDB = string.Empty;
                     if (listBoxDataBases.Nodes.IndexOf(e.Node) != -1)
                     {
-                        useDB = e.Node.Text;
+                        _useDB = e.Node.Text;
                         LoadTbs(e.Node);
                     }
                 }
                 else if (e.Node.Level == 1)
                 {
+                    _useTB = e.Node.Text;
+                    _table = (_useTB != string.Empty ? "[" + _useTB + "]" : "[Table]");
                     LoadColums(e.Node);
                 }
             }
-            
+
         }
         private void LoadDataGreed(TreeNode node)
         {
             try
             {
                 DataTable data = new DataTable();
-                using (SqlCommand cmd = new SqlCommand($"SELECT * FROM {node.Text}", cn))
+                using (SqlCommand cmd = new SqlCommand($"SELECT * FROM [{node.Text}]", cn))
                 {
                     SqlDataAdapter adapter = new SqlDataAdapter();
                     adapter.SelectCommand = cmd;
@@ -77,7 +68,7 @@ namespace BD_FORM_CONNECTION
 
         private void OnCloseForm(object sender, EventArgs e)
         {
-            if(cn != null && cn.State != ConnectionState.Closed)
+            if (cn != null && cn.State != ConnectionState.Closed)
                 cn.Close();
         }
         private void Button_Click(object sender, EventArgs e)
@@ -86,8 +77,17 @@ namespace BD_FORM_CONNECTION
             {
                 MessageBox.Show("Connected");
                 LoadDbs();
+                UnlockContent();
             }
             else { MessageBox.Show("Error"); }
+        }
+        private void UnlockContent()
+        {
+            foreach (var item in this.Controls)
+            {
+                (item as Control).Enabled = true;
+            }
+            toolStripMenuTemplates.Enabled = true;
         }
         private void LoadDbs()
         {
@@ -137,7 +137,7 @@ namespace BD_FORM_CONNECTION
                 {
                     while (dr.Read())
                     {
-                        clmns.Add(dr[0].ToString()+" - "+ dr[1].ToString());
+                        clmns.Add(dr[0].ToString() + " - " + dr[1].ToString());
                     }
                 }
             }
@@ -165,13 +165,72 @@ namespace BD_FORM_CONNECTION
         {
             try
             {
-                using (SqlCommand cmd = new SqlCommand((useDB != string.Empty ? useDB + ";" : "") + textBoxSqlExec.Text, cn))
+
+                string com = (_useDB != string.Empty ? "USE " + _useDB + ";" : "");
+                using (SqlCommand cmd = new SqlCommand(com + textBoxSqlExec.Text, cn))
                 {
                     cmd.ExecuteNonQuery();
                 }
             }
-            catch(Exception ex) { MessageBox.Show(ex.Message);}
-            
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+            finally { button1_Click(null, null); }
+        }
+
+        private void ViewServerForm_Load(object sender, EventArgs e)
+        {
+            this.buttonStrip.Click += Button_Click;
+
+            this.updateTableToolStripMenuItem.Click += (s, e) => textBoxSqlExec.Text += "UPDATE " + _table + "SET col1='new'  WHERE id=1;";
+            this.truncateTableToolStripMenuItem.Click += (s, e) => textBoxSqlExec.Text += "TRUNCATE TABLE " + _table + ";";
+
+            this.toolStripMenuDeleteTable.Click += (s, e) => textBoxSqlExec.Text += "DELETE TABLE " + _table + ";";
+            this.toolStripDeleteTableWhere.Click += (s, e) => textBoxSqlExec.Text += "DELETE FROM " + _table + " WHERE id = 0;";
+
+            this.toolStripMenuSimpleProc.Click += (s, e) => textBoxSqlExec.Text += "CREATE PROCEDURE PROC1 AS BEGIN SELECT * FROM " + _table + " END;";
+            this.toolStripSimpleProc1Par.Click += (s, e) => textBoxSqlExec.Text += "CREATE PROCEDURE PROC1 @id INT AS BEGIN SELECT * FROM " + _table + " WHERE id = @id END;";
+            this.toolStripMenuSimpleProc2Par.Click += (s, e) => textBoxSqlExec.Text += "CREATE PROCEDURE PROC1 @id INT, @name VARCHAR(25) AS BEGIN SELECT * FROM " + _table + " WHERE id = @id AND name = @name END;";
+
+            this.toolStripMenuExecProc.Click += (s, e) => textBoxSqlExec.Text += "EXEC PROC PROC1;";
+            this.toolStripExecProcWithRet.Click += (s, e) => textBoxSqlExec.Text += "DECLARE @return_value INT EXEC @return_value = PROC1";
+
+            this.toolStripMenuTableWithForeign.Click += (s, e) => textBoxSqlExec.Text += "CREATE TABLE Table1([id] INT INDENTITY PRIMARY KEY, [name] VARCHAR(25) NOT NULL, table_id int,  FOREIGN KEY (table_id) REFERENCES Table2(talbe2_id));";
+            this.toolStripMenuSimple.Click += (s, e) => textBoxSqlExec.Text += "CREATE TABLE [Table]([id] INT INDENTITY PRIMARY KEY, [name] VARCHAR(25) NOT NULL);";
+            this.toolStripMenuSimpledesc.Click += (s, e) => textBoxSqlExec.Text += "CREATE TABLE [Table]([id] INT INDENTITY PRIMARY KEY, [name] VARCHAR(25) NOT NULL, [desc] TEXT NULL);";
+            this.toolStripMenuInsertInto1col.Click += (s, e) => textBoxSqlExec.Text += "INSERT INTO " + _table + " VALUES(col1);";
+            this.toolStripMenuInsertInto2col.Click += (s, e) => textBoxSqlExec.Text += "INSERT INTO " + _table + " VALUES(col1, col2);";
+            this.toolStripMenuInsertInto3col.Click += (s, e) => textBoxSqlExec.Text += "INSERT INTO " + _table + " VALUES(col1, col2, col3);";
+            this.toolStripMenuSimpledescanddate.Click += (s, e) => textBoxSqlExec.Text += "CREATE TABLE [Table]([id] INT INDENTITY PRIMARY KEY, [name] VARCHAR(25) NOT NULL, [desc] TEXT NULL, [date] DATETIME NULL);";
+            this.FormClosing += OnCloseForm;
+            this.listBoxDataBases.NodeMouseClick += ListBoxDataBases_NodeMouseClick;
+            dataGridView.ScrollBars = ScrollBars.Both;
+            dataGridView.AutoGenerateColumns = true;
+            dataGridView.AllowUserToAddRows = false;
+            dataGridView.ReadOnly = true;
+            this.listBoxDataBases.BeforeSelect += ListBoxDataBases_BeforeSelect;
+        }
+
+        private void buttonUnuse_Click(object sender, EventArgs e)
+        {
+            this._useDB = string.Empty;
+            this._useTB = string.Empty;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (listBoxDataBases.SelectedNode != null && listBoxDataBases.SelectedNode.Level == 1)
+            {
+                LoadDataGreed(listBoxDataBases.SelectedNode);
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+
+            string com = Interaction.InputBox("Input your sql command to take result");
+            using (SqlCommand cmd = new SqlCommand(com + textBoxSqlExec.Text, cn))
+            {
+                MessageBox.Show(Convert.ToString(cmd.ExecuteScalar()));
+            }
         }
     }
 }
